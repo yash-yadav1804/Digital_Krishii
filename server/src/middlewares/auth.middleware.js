@@ -54,6 +54,24 @@ const protect = async (req, res, next) => {
   }
 };
 
+const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+    const userRoles = req.user.roles;
+
+    const hasPermission = userRoles.some((role) => allowedRoles.includes(role));
+
+    if (!hasPermission) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You do not have permission.",
+      });
+    }
+
+    next();
+  };
+};
+
 module.exports = {
   protect,
+  authorizeRoles,
 };
