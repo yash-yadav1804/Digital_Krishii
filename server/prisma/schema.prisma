@@ -36,20 +36,22 @@ enum PriceUnit {
 }
 
 model User {
-  id                      String             @id @default(uuid())
-  firstName               String
-  lastName                String
-  email                   String             @unique
-  password                String
-  phone                   String?
-  address                 String?
-  pincode                 String?
-  profileImage            String?
-  status                  UserStatus         @default(ACTIVE)
-  roles                   UserRole[]
-  landListings            LandListing[]
-  equipmentListings       EquipmentListing[]
-  equipmentRentalRequests EquipmentRental[]  @relation("EquipmentRequester")
+  id                       String             @id @default(uuid())
+  firstName                String
+  lastName                 String
+  email                    String             @unique
+  password                 String
+  phone                    String?
+  address                  String?
+  pincode                  String?
+  profileImage             String?
+  status                   UserStatus         @default(ACTIVE)
+  roles                    UserRole[]
+  landListings             LandListing[]
+  equipmentListings        EquipmentListing[]
+  equipmentRentalRequests  EquipmentRental[]  @relation("EquipmentRequester")
+  sentContractRequests     ContractRequest[]  @relation("BuyerContractRequests")
+  receivedContractRequests ContractRequest[]  @relation("FarmerContractRequests")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +103,8 @@ model LandListing {
   state    String?
   pincode  String?
 
+  contractRequests ContractRequest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -126,6 +130,23 @@ enum EquipmentPriceUnit {
 enum EquipmentRentalStatus {
   PENDING
   APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+enum ContractTemplateType {
+  MARKET_SPECIFICATION
+  RESOURCE_PROVIDING
+  PRODUCTION_MANAGEMENT
+  SHARED_RISK
+  VERTICAL_INTEGRATION
+  CROP_INSURANCE
+}
+
+enum ContractRequestStatus {
+  PENDING
+  ACCEPTED
   REJECTED
   CANCELLED
   COMPLETED
@@ -189,5 +210,56 @@ model EquipmentRental {
 
   @@index([equipmentId])
   @@index([requesterId])
+  @@index([status])
+}
+
+model ContractTemplate {
+  id String @id @default(uuid())
+
+  type        ContractTemplateType @unique
+  title       String
+  description String?
+  pdfUrl      String?
+
+  isActive Boolean @default(true)
+
+  requests ContractRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContractRequest {
+  id String @id @default(uuid())
+
+  templateId String
+  template   ContractTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  landId String
+  land   LandListing @relation(fields: [landId], references: [id], onDelete: Restrict)
+
+  buyerId String
+  buyer   User   @relation("BuyerContractRequests", fields: [buyerId], references: [id], onDelete: Cascade)
+
+  farmerId String
+  farmer   User   @relation("FarmerContractRequests", fields: [farmerId], references: [id], onDelete: Cascade)
+
+  cropName String?
+  quantity String?
+
+  proposedPrice Decimal?  @db.Decimal(12, 2)
+  startDate     DateTime?
+  endDate       DateTime?
+
+  message String?
+  status  ContractRequestStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([templateId])
+  @@index([landId])
+  @@index([buyerId])
+  @@index([farmerId])
   @@index([status])
 }
