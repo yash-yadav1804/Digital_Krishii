@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { createNotification } = require("./notification.service");
 
 const getActiveContractTemplates = async () => {
   const templates = await prisma.contractTemplate.findMany({
@@ -133,6 +134,12 @@ const createContractRequest = async (buyerId, requestData) => {
         },
       },
     },
+  });
+  await createNotification({
+    userId: land.ownerId,
+    type: "CONTRACT_REQUEST_CREATED",
+    title: "New contract request",
+    message: `${contractRequest.buyer.firstName} ${contractRequest.buyer.lastName} sent a contract request for your land "${land.title}".`,
   });
 
   return contractRequest;
@@ -346,6 +353,19 @@ const updateContractRequestStatus = async (requestId, farmerId, status) => {
     });
 
     return finalRequest;
+  });
+
+  await createNotification({
+    userId: request.buyerId,
+    type:
+      status === "ACCEPTED"
+        ? "CONTRACT_REQUEST_ACCEPTED"
+        : "CONTRACT_REQUEST_REJECTED",
+    title:
+      status === "ACCEPTED"
+        ? "Contract request accepted"
+        : "Contract request rejected",
+    message: `Your contract request for land "${result.land.title}" has been ${status.toLowerCase()}.`,
   });
 
   return result;

@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { createNotification } = require("./notification.service");
 
 const calculateRentalUnits = (startDate, endDate, priceUnit) => {
   const diffInMs = new Date(endDate) - new Date(startDate);
@@ -164,7 +165,20 @@ const updateEquipmentListing = async (equipmentId, ownerId, equipmentData) => {
     },
     data: equipmentData,
   });
+  await createNotification({
+    userId: rental.requesterId,
+    type:
+      status === "APPROVED"
+        ? "EQUIPMENT_RENTAL_APPROVED"
+        : "EQUIPMENT_RENTAL_REJECTED",
+    title:
+      status === "APPROVED"
+        ? "Equipment rental approved"
+        : "Equipment rental rejected",
+    message: `Your rental request for equipment "${rental.equipment.title}" has been ${status.toLowerCase()}.`,
+  });
 
+  return result;
   return updatedEquipment;
 };
 
@@ -277,6 +291,12 @@ const createEquipmentRentalRequest = async (requesterId, rentalData) => {
         },
       },
     },
+  });
+  await createNotification({
+    userId: equipment.ownerId,
+    type: "EQUIPMENT_RENTAL_REQUEST_CREATED",
+    title: "New equipment rental request",
+    message: `${rental.requester.firstName} ${rental.requester.lastName} sent a rental request for your equipment "${equipment.title}".`,
   });
 
   return rental;
@@ -411,6 +431,18 @@ const updateEquipmentRentalStatus = async (rentalId, ownerId, status) => {
     }
 
     return updatedRental;
+  });
+  await createNotification({
+    userId: rental.requesterId,
+    type:
+      status === "APPROVED"
+        ? "EQUIPMENT_RENTAL_APPROVED"
+        : "EQUIPMENT_RENTAL_REJECTED",
+    title:
+      status === "APPROVED"
+        ? "Equipment rental approved"
+        : "Equipment rental rejected",
+    message: `Your rental request for equipment "${rental.equipment.title}" has been ${status.toLowerCase()}.`,
   });
 
   return result;
