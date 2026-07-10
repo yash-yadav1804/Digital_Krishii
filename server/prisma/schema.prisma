@@ -36,38 +36,40 @@ enum PriceUnit {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String     @unique
-  password  String
-  phone     String?
-  address     String?
-  pincode     String?
-  profileImage String?
-  status    UserStatus @default(ACTIVE)
-  landListings LandListing[]
-  roles     UserRole[]
+  id                      String             @id @default(uuid())
+  firstName               String
+  lastName                String
+  email                   String             @unique
+  password                String
+  phone                   String?
+  address                 String?
+  pincode                 String?
+  profileImage            String?
+  status                  UserStatus         @default(ACTIVE)
+  roles                   UserRole[]
+  landListings            LandListing[]
+  equipmentListings       EquipmentListing[]
+  equipmentRentalRequests EquipmentRental[]  @relation("EquipmentRequester")
 
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Role {
-  id    String   @id @default(uuid())
-  name  RoleName @unique
+  id   String   @id @default(uuid())
+  name RoleName @unique
 
   users UserRole[]
 }
 
 model UserRole {
-  id     String @id @default(uuid())
+  id String @id @default(uuid())
 
   userId String
   roleId String
 
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -75,34 +77,117 @@ model UserRole {
 }
 
 model LandListing {
-  id          String          @id @default(uuid())
+  id String @id @default(uuid())
 
-  ownerId     String
-  owner       User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   title       String
   description String?
 
-  area        Decimal         @db.Decimal(10, 2)
-  areaUnit    String          @default("acre")
+  area     Decimal @db.Decimal(10, 2)
+  areaUnit String  @default("acre")
 
-  price       Decimal         @db.Decimal(12, 2)
-  priceUnit   PriceUnit
+  price     Decimal   @db.Decimal(12, 2)
+  priceUnit PriceUnit
 
   listingType LandListingType
   imageUrl    String?
 
-  status      ListingStatus   @default(AVAILABLE)
+  status ListingStatus @default(AVAILABLE)
 
-  address     String?
-  district    String?
-  state       String?
-  pincode     String?
+  address  String?
+  district String?
+  state    String?
+  pincode  String?
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ownerId])
   @@index([listingType])
+  @@index([status])
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  BOOKED
+  MAINTENANCE
+  INACTIVE
+}
+
+enum EquipmentPriceUnit {
+  PER_HOUR
+  PER_DAY
+  PER_WEEK
+  PER_MONTH
+}
+
+enum EquipmentRentalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
+model EquipmentListing {
+  id String @id @default(uuid())
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  title         String
+  equipmentType String
+  description   String?
+
+  brand     String?
+  modelName String?
+  condition String?
+
+  rentPrice Decimal            @db.Decimal(12, 2)
+  priceUnit EquipmentPriceUnit
+
+  imageUrl String?
+  status   EquipmentStatus @default(AVAILABLE)
+
+  address  String?
+  district String?
+  state    String?
+  pincode  String?
+
+  rentals EquipmentRental[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([equipmentType])
+  @@index([status])
+  @@index([district])
+}
+
+model EquipmentRental {
+  id String @id @default(uuid())
+
+  equipmentId String
+  equipment   EquipmentListing @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  requesterId String
+  requester   User   @relation("EquipmentRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime
+
+  message String?
+  status  EquipmentRentalStatus @default(PENDING)
+
+  totalAmount Decimal? @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([equipmentId])
+  @@index([requesterId])
   @@index([status])
 }
