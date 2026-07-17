@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const bcrypt = require("bcryptjs");
 
 const prisma = new PrismaClient();
 
@@ -11,6 +12,75 @@ async function main() {
       update: {},
       create: { name: role },
     });
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminFirstName = process.env.ADMIN_FIRST_NAME || "Digital";
+  const adminLastName = process.env.ADMIN_LAST_NAME || "Admin";
+
+  if (adminEmail && adminPassword) {
+    const adminRole = await prisma.role.findUnique({
+      where: { name: "ADMIN" },
+    });
+
+    if (!adminRole) {
+      throw new Error("ADMIN role not found");
+    }
+
+    const existingAdmin = await prisma.user.findUnique({
+      where: { email: adminEmail },
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash(adminPassword, 10);
+
+      await prisma.user.create({
+        data: {
+          firstName: adminFirstName,
+          lastName: adminLastName,
+          email: adminEmail,
+          password: hashedPassword,
+          status: "ACTIVE",
+          roles: {
+            create: {
+              roleId: adminRole.id,
+            },
+          },
+        },
+      });
+    } else {
+      await prisma.user.update({
+        where: { email: adminEmail },
+        data: {
+          firstName: adminFirstName,
+          lastName: adminLastName,
+          status: "ACTIVE",
+        },
+      });
+
+      const hasAdminRole = existingAdmin.roles.some(
+        (userRole) => userRole.role.name === "ADMIN",
+      );
+
+      if (!hasAdminRole) {
+        await prisma.userRole.create({
+          data: {
+            userId: existingAdmin.id,
+            roleId: adminRole.id,
+          },
+        });
+      }
+    }
+
+    console.log("Admin user seeded successfully");
   }
 
   const contractTemplates = [

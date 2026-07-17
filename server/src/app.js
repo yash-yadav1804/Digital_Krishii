@@ -6,6 +6,7 @@ const landRoutes = require("./routes/land.routes");
 const equipmentRoutes = require("./routes/equipment.routes");
 const contractRoutes = require("./routes/contract.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const adminRoutes = require("./routes/admin.routes");
 
 const app = express();
 
@@ -21,4 +22,5 @@ app.use("/api/lands", landRoutes);
 app.use("/api/equipment", equipmentRoutes);
 app.use("/api/contracts", contractRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/admin", adminRoutes);
 module.exports = app;

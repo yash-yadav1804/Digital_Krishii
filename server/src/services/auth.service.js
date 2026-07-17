@@ -60,6 +60,9 @@ const loginUser = async ({ email, password }) => {
   if (!user) {
     throw new Error("Invalid email or password");
   }
+  if (user.status === "BLOCKED") {
+    throw new Error("Your account has been blocked. Please contact admin.");
+  }
 
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
