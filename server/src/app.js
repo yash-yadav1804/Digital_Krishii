@@ -10,6 +10,7 @@ const equipmentRoutes = require("./routes/equipment.routes");
 const contractRoutes = require("./routes/contract.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const adminRoutes = require("./routes/admin.routes");
+const uploadRoutes = require("./routes/upload.routes");
 
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
@@ -62,6 +63,7 @@ app.use("/api/equipment", equipmentRoutes);
 app.use("/api/contracts", contractRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 /*
   Error middlewares
