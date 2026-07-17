@@ -1,3 +1,5 @@
+const AppError = require("../utils/AppError");
+
 const {
   getDashboardStats,
   getUsers,
@@ -38,7 +40,7 @@ const getUserDetailsForAdmin = async (userId) => {
   const user = await getUserById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   return user;
@@ -46,21 +48,21 @@ const getUserDetailsForAdmin = async (userId) => {
 
 const blockUserByAdmin = async (userId, adminId) => {
   if (userId === adminId) {
-    throw new Error("Admin cannot block their own account");
+    throw new AppError("Admin cannot block their own account", 403);
   }
 
   const user = await getUserById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   if (user.roles.includes("ADMIN")) {
-    throw new Error("Admin users cannot be blocked");
+    throw new AppError("Admin users cannot be blocked", 403);
   }
 
   if (user.status === "BLOCKED") {
-    throw new Error("User is already blocked");
+    throw new AppError("User is already blocked", 409);
   }
 
   const blockedUser = await updateUserStatus(userId, "BLOCKED");
@@ -72,11 +74,11 @@ const unblockUserByAdmin = async (userId) => {
   const user = await getUserById(userId);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new AppError("User not found", 404);
   }
 
   if (user.status === "ACTIVE") {
-    throw new Error("User is already active");
+    throw new AppError("User is already active", 409);
   }
 
   const unblockedUser = await updateUserStatus(userId, "ACTIVE");

@@ -7,6 +7,7 @@ const equipmentRoutes = require("./routes/equipment.routes");
 const contractRoutes = require("./routes/contract.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const adminRoutes = require("./routes/admin.routes");
+const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
 
@@ -23,4 +24,6 @@ app.use("/api/equipment", equipmentRoutes);
 app.use("/api/contracts", contractRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use(notFound);
+app.use(errorHandler);
 module.exports = app;

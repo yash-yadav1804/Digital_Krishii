@@ -1,3 +1,5 @@
+const asyncHandler = require("../utils/asyncHandler");
+
 const {
   getAdminDashboardStats,
   getAllUsersForAdmin,
@@ -6,95 +8,53 @@ const {
   unblockUserByAdmin,
 } = require("../services/admin.service");
 
-const getErrorStatusCode = (message) => {
-  if (message.includes("not found")) return 404;
-  if (message.includes("cannot")) return 403;
-  if (message.includes("already")) return 409;
-  return 400;
-};
+const getStats = asyncHandler(async (req, res) => {
+  const stats = await getAdminDashboardStats();
 
-const getStats = async (req, res) => {
-  try {
-    const stats = await getAdminDashboardStats();
+  res.status(200).json({
+    success: true,
+    data: stats,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      data: stats,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getUsers = asyncHandler(async (req, res) => {
+  const users = await getAllUsersForAdmin(req.query);
 
-const getUsers = async (req, res) => {
-  try {
-    const users = await getAllUsersForAdmin(req.query);
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    data: users,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      data: users,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await getUserDetailsForAdmin(req.params.id);
 
-const getUserById = async (req, res) => {
-  try {
-    const user = await getUserDetailsForAdmin(req.params.id);
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const blockUser = asyncHandler(async (req, res) => {
+  const user = await blockUserByAdmin(req.params.id, req.user.id);
 
-const blockUser = async (req, res) => {
-  try {
-    const user = await blockUserByAdmin(req.params.id, req.user.id);
+  res.status(200).json({
+    success: true,
+    message: "User blocked successfully",
+    data: user,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      message: "User blocked successfully",
-      data: user,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const unblockUser = asyncHandler(async (req, res) => {
+  const user = await unblockUserByAdmin(req.params.id);
 
-const unblockUser = async (req, res) => {
-  try {
-    const user = await unblockUserByAdmin(req.params.id);
-
-    res.status(200).json({
-      success: true,
-      message: "User unblocked successfully",
-      data: user,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+  res.status(200).json({
+    success: true,
+    message: "User unblocked successfully",
+    data: user,
+  });
+});
 
 module.exports = {
   getStats,
