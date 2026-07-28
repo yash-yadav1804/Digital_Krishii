@@ -35,6 +35,11 @@ enum PriceUnit {
   PER_MONTH
 }
 
+enum ReviewTargetType {
+  CONTRACT_REQUEST
+  EQUIPMENT_RENTAL
+}
+
 model User {
   id                       String             @id @default(uuid())
   firstName                String
@@ -53,6 +58,8 @@ model User {
   sentContractRequests     ContractRequest[]  @relation("BuyerContractRequests")
   receivedContractRequests ContractRequest[]  @relation("FarmerContractRequests")
   notifications            Notification[]
+  reviewsGiven             Review[]           @relation("ReviewsGiven")
+  reviewsReceived          Review[]           @relation("ReviewsReceived")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -214,6 +221,7 @@ model EquipmentRental {
   message String?
   status  EquipmentRentalStatus @default(PENDING)
 
+  reviews     Review[]
   totalAmount Decimal? @db.Decimal(12, 2)
 
   createdAt DateTime @default(now())
@@ -258,6 +266,8 @@ model ContractRequest {
   cropName String?
   quantity String?
 
+  reviews Review[]
+
   proposedPrice Decimal?  @db.Decimal(12, 2)
   startDate     DateTime?
   endDate       DateTime?
@@ -293,4 +303,34 @@ model Notification {
   @@index([userId])
   @@index([isRead])
   @@index([type])
+}
+
+model Review {
+  id String @id @default(uuid())
+
+  reviewerId String
+  reviewer   User   @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  revieweeId String
+  reviewee   User   @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  targetType ReviewTargetType
+
+  contractRequestId String?
+  contractRequest   ContractRequest? @relation(fields: [contractRequestId], references: [id], onDelete: Cascade)
+
+  equipmentRentalId String?
+  equipmentRental   EquipmentRental? @relation(fields: [equipmentRentalId], references: [id], onDelete: Cascade)
+
+  rating  Int
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([reviewerId, contractRequestId])
+  @@unique([reviewerId, equipmentRentalId])
+  @@index([reviewerId])
+  @@index([revieweeId])
+  @@index([targetType])
 }

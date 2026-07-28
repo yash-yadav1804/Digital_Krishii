@@ -11,6 +11,7 @@ const contractRoutes = require("./routes/contract.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const adminRoutes = require("./routes/admin.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const reviewRoutes = require("./routes/review.routes");
 
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
@@ -64,7 +65,7 @@ app.use("/api/contracts", contractRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/uploads", uploadRoutes);
-
+app.use("/api/reviews", reviewRoutes);
 /*
   Error middlewares
 */
