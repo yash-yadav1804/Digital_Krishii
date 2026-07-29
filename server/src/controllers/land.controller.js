@@ -1,3 +1,4 @@
+const { getPagination, getPaginationMeta } = require("../utils/pagination");
 const {
   createLandListing,
   getAllLandListings,
@@ -32,11 +33,17 @@ const createLand = async (req, res) => {
 
 const getLands = async (req, res) => {
   try {
-    const lands = await getAllLandListings(req.query);
+    const pagination = getPagination(req.query);
+
+    const { lands, total } = await getAllLandListings(req.query, pagination);
 
     res.status(200).json({
       success: true,
-      count: lands.length,
+      ...getPaginationMeta({
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+      }),
       data: lands,
     });
   } catch (error) {

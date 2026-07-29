@@ -1,3 +1,4 @@
+const { getPagination, getPaginationMeta } = require("../utils/pagination");
 const {
   createEquipmentListing,
   getAllEquipmentListings,
@@ -36,15 +37,24 @@ const createEquipment = async (req, res) => {
 
 const getEquipment = async (req, res) => {
   try {
-    const equipment = await getAllEquipmentListings(req.query);
+    const pagination = getPagination(req.query);
+
+    const { equipment, total } = await getAllEquipmentListings(
+      req.query,
+      pagination,
+    );
 
     res.status(200).json({
       success: true,
-      count: equipment.length,
+      ...getPaginationMeta({
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+      }),
       data: equipment,
     });
   } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });

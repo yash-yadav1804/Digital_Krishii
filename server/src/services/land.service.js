@@ -22,7 +22,7 @@ const createLandListing = async (ownerId, landData) => {
   return land;
 };
 
-const getAllLandListings = async (filters = {}) => {
+const getAllLandListings = async (filters = {}, pagination = {}) => {
   const allowedPublicStatuses = ["AVAILABLE", "PRE_BOOKED", "UNDER_CONTRACT"];
 
   const where = {};
@@ -53,24 +53,35 @@ const getAllLandListings = async (filters = {}) => {
     };
   }
 
-  const lands = await prisma.landListing.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      owner: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
+  const [total, lands] = await prisma.$transaction([
+    prisma.landListing.count({
+      where,
+    }),
+
+    prisma.landListing.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
-  return lands;
+  return {
+    total,
+    lands,
+  };
 };
 
 const getMyLandListings = async (ownerId) => {

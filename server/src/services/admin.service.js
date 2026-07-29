@@ -13,7 +13,7 @@ const getAdminDashboardStats = async () => {
   return stats;
 };
 
-const getAllUsersForAdmin = async (filters) => {
+const getAllUsersForAdmin = async (filters, pagination) => {
   const allowedStatuses = ["ACTIVE", "BLOCKED"];
   const allowedRoles = ["FARMER", "BUYER", "ADMIN"];
 
@@ -31,11 +31,10 @@ const getAllUsersForAdmin = async (filters) => {
     cleanedFilters.search = filters.search;
   }
 
-  const users = await getUsers(cleanedFilters);
+  const result = await getUsers(cleanedFilters, pagination);
 
-  return users;
+  return result;
 };
-
 const getUserDetailsForAdmin = async (userId) => {
   const user = await getUserById(userId);
 

@@ -1,3 +1,4 @@
+const { getPagination, getPaginationMeta } = require("../utils/pagination");
 const asyncHandler = require("../utils/asyncHandler");
 
 const {
@@ -18,11 +19,17 @@ const getStats = asyncHandler(async (req, res) => {
 });
 
 const getUsers = asyncHandler(async (req, res) => {
-  const users = await getAllUsersForAdmin(req.query);
+  const pagination = getPagination(req.query);
+
+  const { users, total } = await getAllUsersForAdmin(req.query, pagination);
 
   res.status(200).json({
     success: true,
-    count: users.length,
+    ...getPaginationMeta({
+      page: pagination.page,
+      limit: pagination.limit,
+      total,
+    }),
     data: users,
   });
 });

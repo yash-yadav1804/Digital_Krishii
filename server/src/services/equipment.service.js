@@ -37,7 +37,7 @@ const createEquipmentListing = async (ownerId, equipmentData) => {
   return equipment;
 };
 
-const getAllEquipmentListings = async (filters = {}) => {
+const getAllEquipmentListings = async (filters = {}, pagination = {}) => {
   const allowedPublicStatuses = ["AVAILABLE", "BOOKED", "MAINTENANCE"];
 
   const where = {};
@@ -71,24 +71,35 @@ const getAllEquipmentListings = async (filters = {}) => {
     };
   }
 
-  const equipment = await prisma.equipmentListing.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      owner: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          phone: true,
+  const [total, equipment] = await prisma.$transaction([
+    prisma.equipmentListing.count({
+      where,
+    }),
+
+    prisma.equipmentListing.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
-  return equipment;
+  return {
+    total,
+    equipment,
+  };
 };
 
 const getMyEquipmentListings = async (ownerId) => {

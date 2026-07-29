@@ -56,7 +56,7 @@ const getDashboardStats = async () => {
   };
 };
 
-const getUsers = async (filters = {}) => {
+const getUsers = async (filters = {}, pagination = {}) => {
   const where = {};
 
   if (filters.status) {
@@ -96,35 +96,46 @@ const getUsers = async (filters = {}) => {
     ];
   }
 
-  const users = await prisma.user.findMany({
-    where,
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      status: true,
-      createdAt: true,
-      roles: {
-        select: {
-          role: {
-            select: {
-              name: true,
+  const [total, users] = await prisma.$transaction([
+    prisma.user.count({
+      where,
+    }),
+
+    prisma.user.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        phone: true,
+        status: true,
+        createdAt: true,
+        roles: {
+          select: {
+            role: {
+              select: {
+                name: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+  ]);
 
-  return users.map((user) => ({
-    ...user,
-    roles: user.roles.map((userRole) => userRole.role.name),
-  }));
+  return {
+    total,
+    users: users.map((user) => ({
+      ...user,
+      roles: user.roles.map((userRole) => userRole.role.name),
+    })),
+  };
 };
 
 const getUserById = async (userId) => {
