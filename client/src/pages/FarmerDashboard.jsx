@@ -1,25 +1,25 @@
-import { useAuth } from "../hooks/useAuth";
+import DashboardLayout from "../layouts/DashboardLayout";
 
 const FarmerDashboard = () => {
-  const { user, logout } = useAuth();
-
   return (
-    <main className="min-h-screen bg-green-50 p-8">
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow p-8">
-        <h1 className="text-3xl font-bold text-green-800">Farmer Dashboard</h1>
+    <DashboardLayout title="Farmer Dashboard">
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="rounded-2xl bg-white p-6 shadow">
+          <p className="text-sm text-slate-500">Land Listings</p>
+          <h3 className="mt-2 text-3xl font-bold text-slate-900">0</h3>
+        </div>
 
-        <p className="mt-3 text-slate-600">
-          Welcome, {user?.firstName} {user?.lastName}
-        </p>
+        <div className="rounded-2xl bg-white p-6 shadow">
+          <p className="text-sm text-slate-500">Equipment Listings</p>
+          <h3 className="mt-2 text-3xl font-bold text-slate-900">0</h3>
+        </div>
 
-        <button
-          onClick={logout}
-          className="mt-6 rounded-lg bg-red-600 px-5 py-3 text-white font-semibold hover:bg-red-700"
-        >
-          Logout
-        </button>
+        <div className="rounded-2xl bg-white p-6 shadow">
+          <p className="text-sm text-slate-500">Contract Requests</p>
+          <h3 className="mt-2 text-3xl font-bold text-slate-900">0</h3>
+        </div>
       </div>
-    </main>
+    </DashboardLayout>
   );
 };
 
