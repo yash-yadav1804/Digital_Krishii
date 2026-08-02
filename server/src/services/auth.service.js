@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/prisma");
@@ -8,7 +9,7 @@ const registerUser = async ({ firstName, lastName, email, password, role }) => {
   });
 
   if (existingUser) {
-    throw new Error("User already exists with this email");
+    throw new AppError("User already exists with this email");
   }
 
   const selectedRole = await prisma.role.findUnique({
@@ -16,7 +17,7 @@ const registerUser = async ({ firstName, lastName, email, password, role }) => {
   });
 
   if (!selectedRole) {
-    throw new Error("Invalid role selected");
+    throw new AppError("Invalid role selected");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -58,16 +59,16 @@ const loginUser = async ({ email, password }) => {
   });
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password");
   }
   if (user.status === "BLOCKED") {
-    throw new Error("Your account has been blocked. Please contact admin.");
+    throw new AppError("Your account has been blocked. Please contact admin.");
   }
 
   const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
   if (!isPasswordCorrect) {
-    throw new Error("Invalid email or password");
+    throw new AppError("Invalid email or password");
   }
 
   const token = jwt.sign(

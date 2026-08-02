@@ -1,3 +1,5 @@
+const asyncHandler = require("../utils/asyncHandler");
+
 const {
   getActiveContractTemplates,
   getContractTemplateById,
@@ -9,151 +11,91 @@ const {
   cancelContractRequest,
 } = require("../services/contract.service");
 
-const getErrorStatusCode = (message) => {
-  if (message.includes("not found")) return 404;
-  if (message.includes("own")) return 403;
-  if (message.includes("only")) return 403;
-  if (message.includes("not available")) return 409;
-  return 400;
-};
+const getTemplates = asyncHandler(async (req, res) => {
+  const templates = await getActiveContractTemplates();
 
-const getTemplates = async (req, res) => {
-  try {
-    const templates = await getActiveContractTemplates();
+  res.status(200).json({
+    success: true,
+    count: templates.length,
+    data: templates,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      count: templates.length,
-      data: templates,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getTemplateById = asyncHandler(async (req, res) => {
+  const template = await getContractTemplateById(req.params.id);
 
-const getTemplateById = async (req, res) => {
-  try {
-    const template = await getContractTemplateById(req.params.id);
+  res.status(200).json({
+    success: true,
+    data: template,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      data: template,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const createRequest = asyncHandler(async (req, res) => {
+  const contractRequest = await createContractRequest(req.user.id, req.body);
 
-const createRequest = async (req, res) => {
-  try {
-    const request = await createContractRequest(req.user.id, req.body);
+  res.status(201).json({
+    success: true,
+    message: "Contract request created successfully",
+    data: contractRequest,
+  });
+});
 
-    res.status(201).json({
-      success: true,
-      message: "Contract request created successfully",
-      data: request,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getSentRequests = asyncHandler(async (req, res) => {
+  const requests = await getMySentContractRequests(req.user.id);
 
-const getSentRequests = async (req, res) => {
-  try {
-    const requests = await getMySentContractRequests(req.user.id);
+  res.status(200).json({
+    success: true,
+    count: requests.length,
+    data: requests,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      count: requests.length,
-      data: requests,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getReceivedRequests = asyncHandler(async (req, res) => {
+  const requests = await getMyReceivedContractRequests(req.user.id);
 
-const getReceivedRequests = async (req, res) => {
-  try {
-    const requests = await getMyReceivedContractRequests(req.user.id);
+  res.status(200).json({
+    success: true,
+    count: requests.length,
+    data: requests,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      count: requests.length,
-      data: requests,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const getRequestById = asyncHandler(async (req, res) => {
+  const request = await getContractRequestById(req.params.id, req.user.id);
 
-const getRequestById = async (req, res) => {
-  try {
-    const request = await getContractRequestById(req.params.id, req.user.id);
+  res.status(200).json({
+    success: true,
+    data: request,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      data: request,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const updateRequestStatus = asyncHandler(async (req, res) => {
+  const request = await updateContractRequestStatus(
+    req.params.id,
+    req.user.id,
+    req.body.status,
+  );
 
-const updateRequestStatus = async (req, res) => {
-  try {
-    const request = await updateContractRequestStatus(
-      req.params.id,
-      req.user.id,
-      req.body.status,
-    );
+  res.status(200).json({
+    success: true,
+    message: "Contract request status updated successfully",
+    data: request,
+  });
+});
 
-    res.status(200).json({
-      success: true,
-      message: "Contract request updated successfully",
-      data: request,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+const cancelRequest = asyncHandler(async (req, res) => {
+  const request = await cancelContractRequest(
+    req.params.id,
+    req.user.id,
+    req.body.reason,
+  );
 
-const cancelRequest = async (req, res) => {
-  try {
-    const request = await cancelContractRequest(req.params.id, req.user.id);
-
-    res.status(200).json({
-      success: true,
-      message: "Contract request cancelled successfully",
-      data: request,
-    });
-  } catch (error) {
-    res.status(getErrorStatusCode(error.message)).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+  res.status(200).json({
+    success: true,
+    message: "Contract request cancelled successfully",
+    data: request,
+  });
+});
 
 module.exports = {
   getTemplates,

@@ -1,5 +1,16 @@
 const express = require("express");
 
+const { protect, authorizeRoles } = require("../middlewares/auth.middleware");
+
+const validate = require("../middlewares/validate.middleware");
+
+const {
+  createEquipmentSchema,
+  updateEquipmentSchema,
+  createEquipmentRentalSchema,
+  updateEquipmentRentalStatusSchema,
+} = require("../validations/equipment.validation");
+
 const {
   createEquipment,
   getEquipment,
@@ -9,88 +20,58 @@ const {
   deleteEquipment,
   createRentalRequest,
   getMyRentalRequests,
-  getRentalRequestsForOwner,
+  getReceivedRentalRequests,
   updateRentalStatus,
 } = require("../controllers/equipment.controller");
 
-const { protect, authorizeRoles } = require("../middlewares/auth.middleware");
-const validate = require("../middlewares/validate.middleware");
-
-const {
-  createEquipmentSchema,
-  updateEquipmentSchema,
-  createEquipmentRentalSchema,
-  updateRentalStatusSchema,
-} = require("../validations/equipment.validation");
-
 const router = express.Router();
 
-/*
-  Equipment listing routes
-*/
+router.use(protect);
 
-router.post(
-  "/",
-  protect,
-  authorizeRoles("FARMER"),
-  validate(createEquipmentSchema),
-  createEquipment,
-);
-
-router.get("/", protect, getEquipment);
-
-router.get("/my", protect, authorizeRoles("FARMER"), getMyEquipment);
-
-/*
-  Equipment rental routes
-  Important: keep these before /:id
-*/
-
+// Equipment rental routes must come before "/:id"
 router.post(
   "/rentals",
-  protect,
   authorizeRoles("FARMER"),
   validate(createEquipmentRentalSchema),
   createRentalRequest,
 );
 
-router.get(
-  "/rentals/my",
-  protect,
-  authorizeRoles("FARMER"),
-  getMyRentalRequests,
-);
+router.get("/rentals/my", authorizeRoles("FARMER"), getMyRentalRequests);
 
 router.get(
   "/rentals/received",
-  protect,
   authorizeRoles("FARMER"),
-  getRentalRequestsForOwner,
+  getReceivedRentalRequests,
 );
 
 router.patch(
   "/rentals/:id/status",
-  protect,
   authorizeRoles("FARMER"),
-  validate(updateRentalStatusSchema),
+  validate(updateEquipmentRentalStatusSchema),
   updateRentalStatus,
 );
 
-/*
-  Dynamic equipment routes
-  Keep these after /my and /rentals routes
-*/
+// Equipment listing routes
+router.post(
+  "/",
+  authorizeRoles("FARMER"),
+  validate(createEquipmentSchema),
+  createEquipment,
+);
 
-router.get("/:id", protect, getEquipmentById);
+router.get("/", getEquipment);
+
+router.get("/my", authorizeRoles("FARMER"), getMyEquipment);
+
+router.get("/:id", getEquipmentById);
 
 router.put(
   "/:id",
-  protect,
   authorizeRoles("FARMER"),
   validate(updateEquipmentSchema),
   updateEquipment,
 );
 
-router.delete("/:id", protect, authorizeRoles("FARMER"), deleteEquipment);
+router.delete("/:id", authorizeRoles("FARMER"), deleteEquipment);
 
 module.exports = router;

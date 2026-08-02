@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const AppError = require("../utils/AppError");
 const { createNotification } = require("./notification.service");
 
 const getActiveContractTemplates = async () => {
@@ -22,7 +23,7 @@ const getContractTemplateById = async (templateId) => {
   });
 
   if (!template || !template.isActive) {
-    throw new Error("Contract template not found");
+    throw new AppError("Contract template not found", 404);
   }
 
   return template;
@@ -36,7 +37,7 @@ const createContractRequest = async (buyerId, requestData) => {
   });
 
   if (!template || !template.isActive) {
-    throw new Error("Contract template not found");
+    throw new AppError("Contract template not found", 404);
   }
 
   const land = await prisma.landListing.findUnique({
@@ -57,21 +58,25 @@ const createContractRequest = async (buyerId, requestData) => {
   });
 
   if (!land || land.status === "INACTIVE") {
-    throw new Error("Land listing not found");
+    throw new AppError("Land listing not found", 404);
   }
 
   if (land.listingType !== "CONTRACT_FARMING") {
-    throw new Error(
+    throw new AppError(
       "Contract request can be created only for contract farming land",
+      400,
     );
   }
 
   if (land.ownerId === buyerId) {
-    throw new Error("You cannot create a contract request for your own land");
+    throw new AppError(
+      "You cannot create a contract request for your own land",
+      400,
+    );
   }
 
   if (land.status !== "AVAILABLE") {
-    throw new Error("Land is not available for contract request");
+    throw new AppError("Land is not available for contract request", 400);
   }
 
   const existingPendingRequest = await prisma.contractRequest.findFirst({
@@ -83,7 +88,7 @@ const createContractRequest = async (buyerId, requestData) => {
   });
 
   if (existingPendingRequest) {
-    throw new Error("You already have a pending request for this land");
+    throw new AppError("You already have a pending request for this land", 409);
   }
 
   const contractRequest = await prisma.contractRequest.create({
@@ -135,6 +140,7 @@ const createContractRequest = async (buyerId, requestData) => {
       },
     },
   });
+
   await createNotification({
     userId: land.ownerId,
     type: "CONTRACT_REQUEST_CREATED",
@@ -251,20 +257,26 @@ const getContractRequestById = async (requestId, userId) => {
   });
 
   if (!request) {
-    throw new Error("Contract request not found");
+    throw new AppError("Contract request not found", 404);
   }
 
   const isBuyer = request.buyerId === userId;
   const isFarmer = request.farmerId === userId;
 
   if (!isBuyer && !isFarmer) {
-    throw new Error("You can view only your own contract requests");
+    throw new AppError("You can view only your own contract requests", 403);
   }
 
   return request;
 };
 
 const updateContractRequestStatus = async (requestId, farmerId, status) => {
+  const allowedStatuses = ["ACCEPTED", "REJECTED"];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new AppError("Invalid contract request status", 400);
+  }
+
   const request = await prisma.contractRequest.findUnique({
     where: {
       id: requestId,
@@ -275,19 +287,22 @@ const updateContractRequestStatus = async (requestId, farmerId, status) => {
   });
 
   if (!request) {
-    throw new Error("Contract request not found");
+    throw new AppError("Contract request not found", 404);
   }
 
   if (request.farmerId !== farmerId) {
-    throw new Error("You can update only requests received for your land");
+    throw new AppError(
+      "You can update only requests received for your land",
+      403,
+    );
   }
 
   if (request.status !== "PENDING") {
-    throw new Error("Only pending contract requests can be updated");
+    throw new AppError("Only pending contract requests can be updated", 400);
   }
 
   if (status === "ACCEPTED" && request.land.status !== "AVAILABLE") {
-    throw new Error("Land is not available for accepting this request");
+    throw new AppError("Land is not available for accepting this request", 400);
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -379,15 +394,15 @@ const cancelContractRequest = async (requestId, buyerId) => {
   });
 
   if (!request) {
-    throw new Error("Contract request not found");
+    throw new AppError("Contract request not found", 404);
   }
 
   if (request.buyerId !== buyerId) {
-    throw new Error("You can cancel only your own contract request");
+    throw new AppError("You can cancel only your own contract request", 403);
   }
 
   if (request.status !== "PENDING") {
-    throw new Error("Only pending contract requests can be cancelled");
+    throw new AppError("Only pending contract requests can be cancelled", 400);
   }
 
   const cancelledRequest = await prisma.contractRequest.update({

@@ -1,5 +1,7 @@
 const express = require("express");
 
+const { protect } = require("../middlewares/auth.middleware");
+
 const {
   getNotifications,
   getUnreadCount,
@@ -7,16 +9,16 @@ const {
   markAllAsRead,
 } = require("../controllers/notification.controller");
 
-const { protect } = require("../middlewares/auth.middleware");
-
 const router = express.Router();
 
-router.get("/", protect, getNotifications);
+router.use(protect);
 
-router.get("/unread-count", protect, getUnreadCount);
+router.get("/", getNotifications);
 
-router.patch("/read-all", protect, markAllAsRead);
+router.get("/unread-count", getUnreadCount);
 
-router.patch("/:id/read", protect, markAsRead);
+router.patch("/read-all", markAllAsRead);
+
+router.patch("/:id/read", markAsRead);
 
 module.exports = router;

@@ -1,18 +1,37 @@
 const prisma = require("../config/prisma");
+const AppError = require("../utils/AppError");
 const { createNotification } = require("./notification.service");
 
 const calculateRentalUnits = (startDate, endDate, priceUnit) => {
-  const diffInMs = new Date(endDate) - new Date(startDate);
+  const start = new Date(startDate);
+  const end = new Date(endDate);
 
-  const hours = Math.ceil(diffInMs / (1000 * 60 * 60));
-  const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+  const diffInMs = end - start;
 
-  if (priceUnit === "PER_HOUR") return hours;
-  if (priceUnit === "PER_DAY") return days;
-  if (priceUnit === "PER_WEEK") return Math.ceil(days / 7);
-  if (priceUnit === "PER_MONTH") return Math.ceil(days / 30);
+  if (diffInMs <= 0) {
+    throw new AppError("End date must be after start date", 400);
+  }
 
-  return days;
+  const diffInHours = Math.ceil(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (priceUnit === "PER_HOUR") {
+    return diffInHours;
+  }
+
+  if (priceUnit === "PER_DAY") {
+    return diffInDays;
+  }
+
+  if (priceUnit === "PER_WEEK") {
+    return Math.ceil(diffInDays / 7);
+  }
+
+  if (priceUnit === "PER_MONTH") {
+    return Math.ceil(diffInDays / 30);
+  }
+
+  return diffInDays;
 };
 
 const createEquipmentListing = async (ownerId, equipmentData) => {
@@ -136,20 +155,11 @@ const getEquipmentListingById = async (equipmentId) => {
           phone: true,
         },
       },
-      rentals: {
-        select: {
-          id: true,
-          startDate: true,
-          endDate: true,
-          status: true,
-          totalAmount: true,
-        },
-      },
     },
   });
 
   if (!equipment) {
-    throw new Error("Equipment listing not found");
+    throw new AppError("Equipment listing not found", 404);
   }
 
   return equipment;
@@ -163,11 +173,11 @@ const updateEquipmentListing = async (equipmentId, ownerId, equipmentData) => {
   });
 
   if (!equipment || equipment.status === "INACTIVE") {
-    throw new Error("Equipment listing not found");
+    throw new AppError("Equipment listing not found", 404);
   }
 
   if (equipment.ownerId !== ownerId) {
-    throw new Error("You can update only your own equipment listing");
+    throw new AppError("You can update only your own equipment listing", 403);
   }
 
   const updatedEquipment = await prisma.equipmentListing.update({
@@ -176,20 +186,7 @@ const updateEquipmentListing = async (equipmentId, ownerId, equipmentData) => {
     },
     data: equipmentData,
   });
-  await createNotification({
-    userId: rental.requesterId,
-    type:
-      status === "APPROVED"
-        ? "EQUIPMENT_RENTAL_APPROVED"
-        : "EQUIPMENT_RENTAL_REJECTED",
-    title:
-      status === "APPROVED"
-        ? "Equipment rental approved"
-        : "Equipment rental rejected",
-    message: `Your rental request for equipment "${rental.equipment.title}" has been ${status.toLowerCase()}.`,
-  });
 
-  return result;
   return updatedEquipment;
 };
 
@@ -201,11 +198,11 @@ const deactivateEquipmentListing = async (equipmentId, ownerId) => {
   });
 
   if (!equipment || equipment.status === "INACTIVE") {
-    throw new Error("Equipment listing not found");
+    throw new AppError("Equipment listing not found", 404);
   }
 
   if (equipment.ownerId !== ownerId) {
-    throw new Error("You can delete only your own equipment listing");
+    throw new AppError("You can delete only your own equipment listing", 403);
   }
 
   const deletedEquipment = await prisma.equipmentListing.update({
@@ -220,23 +217,44 @@ const deactivateEquipmentListing = async (equipmentId, ownerId) => {
   return deletedEquipment;
 };
 
-const createEquipmentRentalRequest = async (requesterId, rentalData) => {
-  const equipment = await prisma.equipmentListing.findUnique({
+const createEquipmentRental = async (requesterId, rentalData) => {
+  const equipment = await prisma.equipmentListing.findFirst({
     where: {
       id: rentalData.equipmentId,
+      status: {
+        not: "INACTIVE",
+      },
+    },
+    include: {
+      owner: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
+      },
     },
   });
 
-  if (!equipment || equipment.status === "INACTIVE") {
-    throw new Error("Equipment listing not found");
+  if (!equipment) {
+    throw new AppError("Equipment listing not found", 404);
   }
 
   if (equipment.ownerId === requesterId) {
-    throw new Error("You cannot rent your own equipment");
+    throw new AppError("You cannot rent your own equipment", 400);
   }
 
   if (equipment.status !== "AVAILABLE") {
-    throw new Error("Equipment is not available for rent");
+    throw new AppError("Equipment is not available for rent", 400);
+  }
+
+  const startDate = new Date(rentalData.startDate);
+  const endDate = new Date(rentalData.endDate);
+
+  if (endDate <= startDate) {
+    throw new AppError("End date must be after start date", 400);
   }
 
   const overlappingRental = await prisma.equipmentRental.findFirst({
@@ -246,16 +264,16 @@ const createEquipmentRentalRequest = async (requesterId, rentalData) => {
         in: ["PENDING", "APPROVED"],
       },
       startDate: {
-        lte: rentalData.endDate,
+        lte: endDate,
       },
       endDate: {
-        gte: rentalData.startDate,
+        gte: startDate,
       },
     },
   });
 
   if (overlappingRental) {
-    throw new Error("Equipment already has a rental request for these dates");
+    throw new AppError("Overlapping rental request already exists", 409);
   }
 
   const rentalUnits = calculateRentalUnits(
@@ -270,39 +288,37 @@ const createEquipmentRentalRequest = async (requesterId, rentalData) => {
     data: {
       equipmentId: rentalData.equipmentId,
       requesterId,
-      startDate: rentalData.startDate,
-      endDate: rentalData.endDate,
+      startDate,
+      endDate,
       message: rentalData.message,
       totalAmount,
     },
     include: {
-      equipment: {
-        select: {
-          id: true,
-          title: true,
-          equipmentType: true,
-          rentPrice: true,
-          priceUnit: true,
-          owner: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              phone: true,
-            },
-          },
-        },
-      },
       requester: {
         select: {
           id: true,
           firstName: true,
           lastName: true,
+          email: true,
           phone: true,
+        },
+      },
+      equipment: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+            },
+          },
         },
       },
     },
   });
+
   await createNotification({
     userId: equipment.ownerId,
     type: "EQUIPMENT_RENTAL_REQUEST_CREATED",
@@ -313,7 +329,7 @@ const createEquipmentRentalRequest = async (requesterId, rentalData) => {
   return rental;
 };
 
-const getMyEquipmentRentalRequests = async (requesterId) => {
+const getMyEquipmentRentals = async (requesterId) => {
   const rentals = await prisma.equipmentRental.findMany({
     where: {
       requesterId,
@@ -323,18 +339,13 @@ const getMyEquipmentRentalRequests = async (requesterId) => {
     },
     include: {
       equipment: {
-        select: {
-          id: true,
-          title: true,
-          equipmentType: true,
-          rentPrice: true,
-          priceUnit: true,
-          status: true,
+        include: {
           owner: {
             select: {
               id: true,
               firstName: true,
               lastName: true,
+              email: true,
               phone: true,
             },
           },
@@ -346,7 +357,7 @@ const getMyEquipmentRentalRequests = async (requesterId) => {
   return rentals;
 };
 
-const getRentalRequestsForMyEquipment = async (ownerId) => {
+const getReceivedEquipmentRentals = async (ownerId) => {
   const rentals = await prisma.equipmentRental.findMany({
     where: {
       equipment: {
@@ -357,15 +368,6 @@ const getRentalRequestsForMyEquipment = async (ownerId) => {
       createdAt: "desc",
     },
     include: {
-      equipment: {
-        select: {
-          id: true,
-          title: true,
-          equipmentType: true,
-          rentPrice: true,
-          priceUnit: true,
-        },
-      },
       requester: {
         select: {
           id: true,
@@ -375,6 +377,7 @@ const getRentalRequestsForMyEquipment = async (ownerId) => {
           phone: true,
         },
       },
+      equipment: true,
     },
   });
 
@@ -382,29 +385,59 @@ const getRentalRequestsForMyEquipment = async (ownerId) => {
 };
 
 const updateEquipmentRentalStatus = async (rentalId, ownerId, status) => {
+  const allowedStatuses = ["APPROVED", "REJECTED"];
+
+  if (!allowedStatuses.includes(status)) {
+    throw new AppError("Invalid rental status", 400);
+  }
+
   const rental = await prisma.equipmentRental.findUnique({
     where: {
       id: rentalId,
     },
     include: {
-      equipment: true,
+      requester: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
+      },
+      equipment: {
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      },
     },
   });
 
   if (!rental) {
-    throw new Error("Rental request not found");
+    throw new AppError("Equipment rental request not found", 404);
   }
 
   if (rental.equipment.ownerId !== ownerId) {
-    throw new Error("You can update only requests for your own equipment");
+    throw new AppError(
+      "Only equipment owner can approve or reject rental requests",
+      403,
+    );
   }
 
   if (rental.status !== "PENDING") {
-    throw new Error("Only pending rental requests can be updated");
+    throw new AppError("Rental request already processed", 400);
   }
 
   if (status === "APPROVED" && rental.equipment.status !== "AVAILABLE") {
-    throw new Error("Equipment is not available for approval");
+    throw new AppError("Equipment is not available for rent", 400);
   }
 
   const result = await prisma.$transaction(async (tx) => {
@@ -414,6 +447,30 @@ const updateEquipmentRentalStatus = async (rentalId, ownerId, status) => {
       },
       data: {
         status,
+      },
+      include: {
+        requester: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+          },
+        },
+        equipment: {
+          include: {
+            owner: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -443,6 +500,7 @@ const updateEquipmentRentalStatus = async (rentalId, ownerId, status) => {
 
     return updatedRental;
   });
+
   await createNotification({
     userId: rental.requesterId,
     type:
@@ -466,8 +524,8 @@ module.exports = {
   getEquipmentListingById,
   updateEquipmentListing,
   deactivateEquipmentListing,
-  createEquipmentRentalRequest,
-  getMyEquipmentRentalRequests,
-  getRentalRequestsForMyEquipment,
+  createEquipmentRental,
+  getMyEquipmentRentals,
+  getReceivedEquipmentRentals,
   updateEquipmentRentalStatus,
 };

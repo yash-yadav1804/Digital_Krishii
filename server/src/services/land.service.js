@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const AppError = require("../utils/AppError");
 
 const createLandListing = async (ownerId, landData) => {
   const land = await prisma.landListing.create({
@@ -122,7 +123,7 @@ const getLandListingById = async (landId) => {
   });
 
   if (!land) {
-    throw new Error("Land listing not found");
+    throw new AppError("Land listing not found", 404);
   }
 
   return land;
@@ -136,11 +137,11 @@ const updateLandListing = async (landId, ownerId, landData) => {
   });
 
   if (!land || land.status === "INACTIVE") {
-    throw new Error("Land listing not found");
+    throw new AppError("Land listing not found", 404);
   }
 
   if (land.ownerId !== ownerId) {
-    throw new Error("You can update only your own land listing");
+    throw new AppError("You can update only your own land listing", 403);
   }
 
   const updatedLand = await prisma.landListing.update({
@@ -161,11 +162,11 @@ const deactivateLandListing = async (landId, ownerId) => {
   });
 
   if (!land || land.status === "INACTIVE") {
-    throw new Error("Land listing not found");
+    throw new AppError("Land listing not found", 404);
   }
 
   if (land.ownerId !== ownerId) {
-    throw new Error("You can delete only your own land listing");
+    throw new AppError("You can delete only your own land listing", 403);
   }
 
   const deletedLand = await prisma.landListing.update({

@@ -1,64 +1,74 @@
 const prisma = require("../config/prisma");
+const AppError = require("../utils/AppError");
 
-const getMyProfile = async (userId) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+const userSelect = {
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  address: true,
+  pincode: true,
+  profileImage: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  roles: {
     select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      address: true,
-      pincode: true,
-      profileImage: true,
-      status: true,
-      roles: {
+      role: {
         select: {
-          role: {
-            select: {
-              name: true,
-            },
-          },
+          name: true,
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
-  });
+  },
+};
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
+const formatUserProfile = (user) => {
   return {
     ...user,
     roles: user.roles.map((userRole) => userRole.role.name),
   };
 };
 
-const updateMyProfile = async (userId, profileData) => {
-  const updatedUser = await prisma.user.update({
-    where: { id: userId },
-    data: profileData,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      address: true,
-      pincode: true,
-      profileImage: true,
-      status: true,
-      updatedAt: true,
+const getUserProfile = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    select: userSelect,
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  return formatUserProfile(user);
+};
+
+const updateUserProfile = async (userId, profileData) => {
+  const existingUser = await prisma.user.findUnique({
+    where: {
+      id: userId,
     },
   });
 
-  return updatedUser;
+  if (!existingUser) {
+    throw new AppError("User not found", 404);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: profileData,
+    select: userSelect,
+  });
+
+  return formatUserProfile(updatedUser);
 };
 
 module.exports = {
-  getMyProfile,
-  updateMyProfile,
+  getUserProfile,
+  updateUserProfile,
 };

@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const AppError = require("../utils/AppError");
 
 const createNotification = async ({ userId, type, title, message }) => {
   const notification = await prisma.notification.create({
@@ -37,14 +38,14 @@ const getMyNotifications = async (userId, filters = {}) => {
 };
 
 const getUnreadNotificationCount = async (userId) => {
-  const count = await prisma.notification.count({
+  const unreadCount = await prisma.notification.count({
     where: {
       userId,
       isRead: false,
     },
   });
 
-  return count;
+  return unreadCount;
 };
 
 const markNotificationAsRead = async (notificationId, userId) => {
@@ -55,11 +56,11 @@ const markNotificationAsRead = async (notificationId, userId) => {
   });
 
   if (!notification) {
-    throw new Error("Notification not found");
+    throw new AppError("Notification not found", 404);
   }
 
   if (notification.userId !== userId) {
-    throw new Error("You can update only your own notification");
+    throw new AppError("You can update only your own notifications", 403);
   }
 
   const updatedNotification = await prisma.notification.update({
@@ -75,7 +76,7 @@ const markNotificationAsRead = async (notificationId, userId) => {
 };
 
 const markAllNotificationsAsRead = async (userId) => {
-  await prisma.notification.updateMany({
+  const result = await prisma.notification.updateMany({
     where: {
       userId,
       isRead: false,
@@ -86,7 +87,7 @@ const markAllNotificationsAsRead = async (userId) => {
   });
 
   return {
-    message: "All notifications marked as read",
+    updatedCount: result.count,
   };
 };
 
