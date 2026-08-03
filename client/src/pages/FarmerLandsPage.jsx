@@ -1,11 +1,14 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../layouts/DashboardLayout";
 import AddLandForm from "../components/lands/AddLandForm.jsx";
-import { getMyLands } from "../api/landApi";
+import StatusBadge from "../components/common/StatusBadge.jsx";
+import { deleteLand, getMyLands } from "../api/landApi";
 
 const FarmerLandsPage = () => {
   const [showForm, setShowForm] = useState(false);
+  const [actionError, setActionError] = useState("");
+
   const queryClient = useQueryClient();
 
   const {
@@ -16,6 +19,21 @@ const FarmerLandsPage = () => {
   } = useQuery({
     queryKey: ["farmer-lands"],
     queryFn: getMyLands,
+  });
+
+  const deleteLandMutation = useMutation({
+    mutationFn: deleteLand,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["farmer-lands"],
+      });
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to delete land listing.";
+
+      setActionError(message);
+    },
   });
 
   const lands = landsResponse?.data || [];
@@ -31,6 +49,19 @@ const FarmerLandsPage = () => {
     });
   };
 
+  const handleDeleteLand = async (landId) => {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this land listing?",
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setActionError("");
+    deleteLandMutation.mutate(landId);
+  };
+
   return (
     <DashboardLayout title="My Lands">
       {showForm && (
@@ -40,9 +71,9 @@ const FarmerLandsPage = () => {
         />
       )}
 
-      {isError && (
+      {(isError || actionError) && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
+          {actionError || errorMessage}
         </div>
       )}
 
@@ -79,7 +110,7 @@ const FarmerLandsPage = () => {
             {lands.map((land) => (
               <article
                 key={land.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-5"
+                className="grid gap-4 px-6 py-5 md:grid-cols-6"
               >
                 <div className="md:col-span-2">
                   <h4 className="font-semibold text-slate-900">{land.title}</h4>
@@ -89,7 +120,7 @@ const FarmerLandsPage = () => {
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
-                    {land.listingType}
+                    {land.listingType?.replaceAll("_", " ")}
                   </p>
                 </div>
 
@@ -103,15 +134,26 @@ const FarmerLandsPage = () => {
                 <div>
                   <p className="text-sm text-slate-500">Price</p>
                   <p className="font-medium text-slate-900">
-                    ₹{land.price} / {land.priceUnit}
+                    ₹{land.price} / {land.priceUnit?.replaceAll("_", " ")}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm text-slate-500">Status</p>
-                  <span className="inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                    {land.status}
-                  </span>
+                  <div className="mt-1">
+                    <StatusBadge status={land.status} />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-start md:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteLand(land.id)}
+                    disabled={deleteLandMutation.isPending}
+                    className="rounded-lg border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deleteLandMutation.isPending ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </article>
             ))}
