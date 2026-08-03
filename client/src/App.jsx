@@ -11,6 +11,7 @@ import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
 import BuyerLandsPage from "./pages/BuyerLandsPage.jsx";
 import FarmerContractRequestsPage from "./pages/FarmerContractRequestsPage.jsx";
 import BuyerSentContractsPage from "./pages/BuyerSentContractsPage.jsx";
+import NotificationsPage from "./pages/NotificationsPage.jsx";
 
 const App = () => {
   return (
@@ -83,6 +84,14 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         }
       />
