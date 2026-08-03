@@ -6,6 +6,7 @@ import FarmerDashboard from "./pages/FarmerDashboard";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import FarmerLandsPage from "./pages/FarmerLandsPage";
 
 const App = () => {
   return (
@@ -24,7 +25,14 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/farmer/lands"
+        element={
+          <ProtectedRoute allowedRoles={["FARMER"]}>
+            <FarmerLandsPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/buyer/dashboard"
         element={
