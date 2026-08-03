@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import DashboardLayout from "../layouts/DashboardLayout.jsx";
+import DashboardLayout from "../layouts/DashboardLayout";
+import AddEquipmentForm from "../components/equipment/AddEquipmentForm.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
-import { deleteEquipment, getMyEquipment } from "../api/equipmentApi.js";
+import { deleteEquipment, getMyEquipment } from "../api/equipmentApi";
 
 const FarmerEquipmentPage = () => {
+  const [showForm, setShowForm] = useState(false);
   const [actionError, setActionError] = useState("");
 
   const queryClient = useQueryClient();
@@ -39,6 +41,14 @@ const FarmerEquipmentPage = () => {
   const errorMessage =
     error?.response?.data?.message || "Failed to load equipment listings.";
 
+  const handleEquipmentCreated = async () => {
+    setShowForm(false);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["farmer-equipment"],
+    });
+  };
+
   const handleDeleteEquipment = (equipmentId) => {
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this equipment listing?",
@@ -54,6 +64,13 @@ const FarmerEquipmentPage = () => {
 
   return (
     <DashboardLayout title="My Equipment">
+      {showForm && (
+        <AddEquipmentForm
+          onEquipmentCreated={handleEquipmentCreated}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
       {(isError || actionError) && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {actionError || errorMessage}
@@ -72,8 +89,11 @@ const FarmerEquipmentPage = () => {
             </p>
           </div>
 
-          <button className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
-            Add Equipment
+          <button
+            onClick={() => setShowForm((prevValue) => !prevValue)}
+            className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
+          >
+            {showForm ? "Close Form" : "Add Equipment"}
           </button>
         </div>
 
