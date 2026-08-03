@@ -12,6 +12,7 @@ import BuyerLandsPage from "./pages/BuyerLandsPage.jsx";
 import FarmerContractRequestsPage from "./pages/FarmerContractRequestsPage.jsx";
 import BuyerSentContractsPage from "./pages/BuyerSentContractsPage.jsx";
 import FarmerRentalRequestsPage from "./pages/FarmerRentalRequestsPage.jsx";
+import BrowseEquipmentPage from "./pages/BrowseEquipmentPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
 
 const App = () => {
@@ -44,6 +45,14 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["FARMER"]}>
             <FarmerEquipmentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/equipment/browse"
+        element={
+          <ProtectedRoute allowedRoles={["FARMER"]}>
+            <BrowseEquipmentPage />
           </ProtectedRoute>
         }
       />

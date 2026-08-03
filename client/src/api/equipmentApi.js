@@ -36,6 +36,10 @@ export const deleteEquipment = async (equipmentId) => {
   return response.data;
 };
 
+export const createRentalRequest = async (rentalData) => {
+  const response = await apiClient.post("/equipment/rentals", rentalData);
+  return response.data;
+};
 export const createEquipmentRentalRequest = async (rentalData) => {
   const response = await apiClient.post("/equipment/rentals", rentalData);
   return response.data;

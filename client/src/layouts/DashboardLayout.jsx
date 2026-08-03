@@ -6,6 +6,10 @@ const roleLinks = {
     { label: "Dashboard", path: "/farmer/dashboard" },
     { label: "My Lands", path: "/farmer/lands" },
     { label: "My Equipment", path: "/farmer/equipment" },
+    {
+      label: "Browse Equipment",
+      path: "/farmer/equipment/browse",
+    },
     { label: "Contract Requests", path: "/farmer/contracts" },
     { label: "Rental Requests", path: "/farmer/rentals" },
     { label: "Notifications", path: "/notifications" },
