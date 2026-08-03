@@ -11,6 +11,7 @@ import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
 import BuyerLandsPage from "./pages/BuyerLandsPage.jsx";
 import FarmerContractRequestsPage from "./pages/FarmerContractRequestsPage.jsx";
 import BuyerSentContractsPage from "./pages/BuyerSentContractsPage.jsx";
+import FarmerRentalRequestsPage from "./pages/FarmerRentalRequestsPage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
 
 const App = () => {
@@ -51,6 +52,14 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["FARMER"]}>
             <FarmerContractRequestsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/rentals"
+        element={
+          <ProtectedRoute allowedRoles={["FARMER"]}>
+            <FarmerRentalRequestsPage />
           </ProtectedRoute>
         }
       />
