@@ -1,30 +1,46 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../layouts/DashboardLayout";
+import AddLandForm from "../components/lands/AddLandForm.jsx";
 import { getMyLands } from "../api/landApi";
 
 const FarmerLandsPage = () => {
-  const [lands, setLands] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchMyLands = async () => {
-      try {
-        const response = await getMyLands();
-        setLands(response.data || []);
-      } catch (error) {
-        const message =
-          error.response?.data?.message || "Failed to load land listings.";
+  const {
+    data: landsResponse,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["farmer-lands"],
+    queryFn: getMyLands,
+  });
 
-        setErrorMessage(message);
-      }
-    };
+  const lands = landsResponse?.data || [];
 
-    fetchMyLands();
-  }, []);
+  const errorMessage =
+    error?.response?.data?.message || "Failed to load land listings.";
+
+  const handleLandCreated = async () => {
+    setShowForm(false);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["farmer-lands"],
+    });
+  };
 
   return (
     <DashboardLayout title="My Lands">
-      {errorMessage && (
+      {showForm && (
+        <AddLandForm
+          onLandCreated={handleLandCreated}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      {isError && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
@@ -36,17 +52,25 @@ const FarmerLandsPage = () => {
             <h3 className="text-lg font-semibold text-slate-900">
               Land Listings
             </h3>
+
             <p className="text-sm text-slate-500">
               Manage your contract farming and rental land listings.
             </p>
           </div>
 
-          <button className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
-            Add Land
+          <button
+            onClick={() => setShowForm((prevValue) => !prevValue)}
+            className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
+          >
+            {showForm ? "Close Form" : "Add Land"}
           </button>
         </div>
 
-        {lands.length === 0 ? (
+        {isLoading ? (
+          <div className="px-6 py-10 text-center text-slate-500">
+            Loading land listings...
+          </div>
+        ) : lands.length === 0 ? (
           <div className="px-6 py-10 text-center text-slate-500">
             No land listings found.
           </div>
@@ -55,7 +79,7 @@ const FarmerLandsPage = () => {
             {lands.map((land) => (
               <article
                 key={land.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-4"
+                className="grid gap-4 px-6 py-5 md:grid-cols-5"
               >
                 <div className="md:col-span-2">
                   <h4 className="font-semibold text-slate-900">{land.title}</h4>
@@ -63,12 +87,23 @@ const FarmerLandsPage = () => {
                   <p className="mt-1 text-sm text-slate-500">
                     {land.district}, {land.state}
                   </p>
+
+                  <p className="mt-1 text-xs text-slate-400">
+                    {land.listingType}
+                  </p>
                 </div>
 
                 <div>
                   <p className="text-sm text-slate-500">Area</p>
                   <p className="font-medium text-slate-900">
                     {land.area} {land.areaUnit}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-slate-500">Price</p>
+                  <p className="font-medium text-slate-900">
+                    ₹{land.price} / {land.priceUnit}
                   </p>
                 </div>
 
