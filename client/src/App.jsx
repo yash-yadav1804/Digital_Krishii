@@ -10,6 +10,7 @@ import FarmerLandsPage from "./pages/FarmerLandsPage";
 import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
 import BuyerLandsPage from "./pages/BuyerLandsPage.jsx";
 import FarmerContractRequestsPage from "./pages/FarmerContractRequestsPage.jsx";
+import BuyerSentContractsPage from "./pages/BuyerSentContractsPage.jsx";
 
 const App = () => {
   return (
@@ -69,7 +70,14 @@ const App = () => {
           </ProtectedRoute>
         }
       />
-
+      <Route
+        path="/buyer/contracts"
+        element={
+          <ProtectedRoute allowedRoles={["BUYER"]}>
+            <BuyerSentContractsPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/dashboard"
         element={
