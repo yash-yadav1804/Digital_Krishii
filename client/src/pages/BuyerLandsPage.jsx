@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "../layouts/DashboardLayout";
 import StatusBadge from "../components/common/StatusBadge.jsx";
+import ContractRequestModal from "../components/contracts/ContractRequestModal.jsx";
 import { getLands } from "../api/landApi";
 
 const BuyerLandsPage = () => {
   const [page, setPage] = useState(1);
   const [district, setDistrict] = useState("");
+  const [selectedLand, setSelectedLand] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const queryClient = useQueryClient();
 
   const limit = 6;
 
@@ -38,8 +43,25 @@ const BuyerLandsPage = () => {
     setPage(1);
   };
 
+  const handleRequestCreated = async () => {
+    setSelectedLand(null);
+    setSuccessMessage("Contract request sent successfully.");
+
+    await queryClient.invalidateQueries({
+      queryKey: ["buyer-lands"],
+    });
+  };
+
   return (
     <DashboardLayout title="Browse Lands">
+      {selectedLand && (
+        <ContractRequestModal
+          land={selectedLand}
+          onClose={() => setSelectedLand(null)}
+          onRequestCreated={handleRequestCreated}
+        />
+      )}
+
       <div className="mb-6 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
@@ -48,7 +70,7 @@ const BuyerLandsPage = () => {
             </h3>
 
             <p className="text-sm text-slate-500">
-              Browse farmer land listings and choose land for contract farming.
+              Browse farmer land listings and send contract requests.
             </p>
           </div>
 
@@ -67,6 +89,12 @@ const BuyerLandsPage = () => {
           </div>
         </div>
       </div>
+
+      {successMessage && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          {successMessage}
+        </div>
+      )}
 
       {isError && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -103,9 +131,7 @@ const BuyerLandsPage = () => {
                 <StatusBadge status={land.status} />
               </div>
 
-              <p className="mt-4 line-clamp-2 text-sm text-slate-600">
-                {land.description}
-              </p>
+              <p className="mt-4 text-sm text-slate-600">{land.description}</p>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-3">
                 <div>
@@ -133,6 +159,10 @@ const BuyerLandsPage = () => {
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
+                  onClick={() => {
+                    setSuccessMessage("");
+                    setSelectedLand(land);
+                  }}
                   className="rounded-lg bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800"
                 >
                   Request Contract
