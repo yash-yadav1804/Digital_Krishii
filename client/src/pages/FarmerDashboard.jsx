@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
+import DashboardStatsGrid from "../components/dashboard/DashboardStatsGrid.jsx";
 import { getMyLands } from "../api/landApi";
 import {
   getMyEquipment,
@@ -106,17 +107,7 @@ const FarmerDashboard = () => {
         </div>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => (
-          <div key={card.label} className="rounded-2xl bg-white p-6 shadow">
-            <p className="text-sm text-slate-500">{card.label}</p>
-
-            <h3 className="mt-2 text-3xl font-bold text-slate-900">
-              {card.value}
-            </h3>
-          </div>
-        ))}
-      </div>
+      <DashboardStatsGrid cards={cards} />
     </DashboardLayout>
   );
 };
