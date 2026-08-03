@@ -8,6 +8,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import FarmerLandsPage from "./pages/FarmerLandsPage";
 import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
+import BuyerLandsPage from "./pages/BuyerLandsPage.jsx";
 
 const App = () => {
   return (
@@ -47,6 +48,15 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["BUYER"]}>
             <BuyerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/buyer/lands"
+        element={
+          <ProtectedRoute allowedRoles={["BUYER"]}>
+            <BuyerLandsPage />
           </ProtectedRoute>
         }
       />
