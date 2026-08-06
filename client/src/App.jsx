@@ -13,6 +13,7 @@ import FarmerContractRequestsPage from "./pages/FarmerContractRequestsPage.jsx";
 import BuyerSentContractsPage from "./pages/BuyerSentContractsPage.jsx";
 import FarmerRentalRequestsPage from "./pages/FarmerRentalRequestsPage.jsx";
 import BrowseEquipmentPage from "./pages/BrowseEquipmentPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
 
 const App = () => {
@@ -102,6 +103,14 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
