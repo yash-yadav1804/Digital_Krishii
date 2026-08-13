@@ -1,68 +1,62 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "../layouts/DashboardLayout";
 import DashboardStatsGrid from "../components/dashboard/DashboardStatsGrid.jsx";
 import { getAdminStats } from "../api/adminApi";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
+  const {
+    data: statsResponse,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: getAdminStats,
+  });
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await getAdminStats();
-        setStats(response.data);
-      } catch (error) {
-        const message =
-          error.response?.data?.message || "Failed to load admin stats.";
+  const stats = statsResponse?.data || statsResponse || {};
 
-        setErrorMessage(message);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  const errorMessage =
+    error?.response?.data?.message || "Failed to load admin dashboard.";
 
   const cards = [
     {
-      label: "Users",
-      value: stats?.totalUsers ?? 0,
+      label: "Total Users",
+      value: stats.totalUsers || 0,
+      helperText: "All registered platform users",
     },
     {
       label: "Farmers",
-      value: stats?.totalFarmers ?? 0,
+      value: stats.totalFarmers || 0,
+      helperText: "Users with farmer role",
     },
     {
       label: "Buyers",
-      value: stats?.totalBuyers ?? 0,
+      value: stats.totalBuyers || 0,
+      helperText: "Users with buyer role",
     },
     {
-      label: "Lands",
-      value: stats?.totalLands ?? 0,
-    },
-    {
-      label: "Equipment",
-      value: stats?.totalEquipment ?? 0,
-    },
-    {
-      label: "Contract Requests",
-      value: stats?.totalContractRequests ?? 0,
-    },
-    {
-      label: "Equipment Rentals",
-      value: stats?.totalEquipmentRentals ?? 0,
+      label: "Blocked Users",
+      value: stats.blockedUsers || 0,
+      helperText: "Users blocked by admin",
     },
   ];
 
   return (
     <DashboardLayout title="Admin Dashboard">
-      {errorMessage && (
+      {isError && (
         <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
         </div>
       )}
 
-      <DashboardStatsGrid cards={cards} />
+      {isLoading ? (
+        <div className="rounded-2xl bg-white px-6 py-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200">
+          Loading admin dashboard...
+        </div>
+      ) : (
+        <DashboardStatsGrid cards={cards} />
+      )}
     </DashboardLayout>
   );
 };
