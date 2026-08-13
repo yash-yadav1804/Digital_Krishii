@@ -44,6 +44,13 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
 
     setErrorMessage("");
     setIsSubmitting(true);
+    if (!formData.imageUrl) {
+      setErrorMessage(
+        "Please upload an equipment image before creating the listing.",
+      );
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       await createEquipment({
@@ -294,7 +301,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
         <div className="flex items-end">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !formData.imageUrl}
             className="w-full rounded-lg bg-green-700 px-4 py-3 font-semibold text-white hover:bg-green-800 disabled:cursor-not-allowed disabled:bg-green-400"
           >
             {isSubmitting ? "Creating..." : "Create Equipment"}
