@@ -4,6 +4,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import ContractRequestModal from "../components/contracts/ContractRequestModal.jsx";
 import { getLands } from "../api/landApi";
+import EmptyState from "../components/common/EmptyState.jsx";
 
 const BuyerLandsPage = () => {
   const [page, setPage] = useState(1);
@@ -107,9 +108,20 @@ const BuyerLandsPage = () => {
           Loading available lands...
         </div>
       ) : lands.length === 0 ? (
-        <div className="rounded-2xl bg-white px-6 py-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200">
-          No available lands found.
-        </div>
+        <EmptyState
+          icon="🗺️"
+          title="No land opportunities found"
+          description="Try changing your district filter or check again later when farmers add new contract farming land listings."
+          actionLabel={district ? "Clear Filter" : undefined}
+          onAction={
+            district
+              ? () => {
+                  setDistrict("");
+                  setPage(1);
+                }
+              : undefined
+          }
+        />
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           {lands.map((land) => (
