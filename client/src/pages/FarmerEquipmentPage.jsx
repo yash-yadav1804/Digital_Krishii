@@ -23,11 +23,17 @@ const FarmerEquipmentPage = () => {
 
   const deleteEquipmentMutation = useMutation({
     mutationFn: deleteEquipment,
+
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["farmer-equipment"],
       });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["browse-equipment"],
+      });
     },
+
     onError: (error) => {
       const message =
         error.response?.data?.message || "Failed to delete equipment listing.";
@@ -46,6 +52,10 @@ const FarmerEquipmentPage = () => {
 
     await queryClient.invalidateQueries({
       queryKey: ["farmer-equipment"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["browse-equipment"],
     });
   };
 
@@ -110,8 +120,22 @@ const FarmerEquipmentPage = () => {
             {equipmentList.map((equipment) => (
               <article
                 key={equipment.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-7"
+                className="grid gap-4 px-6 py-5 md:grid-cols-8"
               >
+                <div className="h-28 overflow-hidden rounded-xl bg-slate-100">
+                  {equipment.imageUrl ? (
+                    <img
+                      src={equipment.imageUrl}
+                      alt={equipment.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400">
+                      No image available
+                    </div>
+                  )}
+                </div>
+
                 <div className="md:col-span-2">
                   <h4 className="font-semibold text-slate-900">
                     {equipment.title}
@@ -128,6 +152,7 @@ const FarmerEquipmentPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Brand</p>
+
                   <p className="font-medium text-slate-900">
                     {equipment.brand || "N/A"}
                   </p>
@@ -135,6 +160,7 @@ const FarmerEquipmentPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Model</p>
+
                   <p className="font-medium text-slate-900">
                     {equipment.modelName || "N/A"}
                   </p>
@@ -142,6 +168,7 @@ const FarmerEquipmentPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Rent</p>
+
                   <p className="font-medium text-slate-900">
                     ₹{equipment.rentPrice} /{" "}
                     {equipment.priceUnit?.replaceAll("_", " ")}
@@ -150,6 +177,7 @@ const FarmerEquipmentPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Status</p>
+
                   <div className="mt-1">
                     <StatusBadge status={equipment.status} />
                   </div>

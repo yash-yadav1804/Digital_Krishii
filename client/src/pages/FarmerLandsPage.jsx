@@ -23,11 +23,17 @@ const FarmerLandsPage = () => {
 
   const deleteLandMutation = useMutation({
     mutationFn: deleteLand,
+
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ["farmer-lands"],
       });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["buyer-lands"],
+      });
     },
+
     onError: (error) => {
       const message =
         error.response?.data?.message || "Failed to delete land listing.";
@@ -46,6 +52,10 @@ const FarmerLandsPage = () => {
 
     await queryClient.invalidateQueries({
       queryKey: ["farmer-lands"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["buyer-lands"],
     });
   };
 
@@ -110,8 +120,22 @@ const FarmerLandsPage = () => {
             {lands.map((land) => (
               <article
                 key={land.id}
-                className="grid gap-4 px-6 py-5 md:grid-cols-6"
+                className="grid gap-4 px-6 py-5 md:grid-cols-7"
               >
+                <div className="h-28 overflow-hidden rounded-xl bg-slate-100">
+                  {land.imageUrl ? (
+                    <img
+                      src={land.imageUrl}
+                      alt={land.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-3 text-center text-xs text-slate-400">
+                      No image available
+                    </div>
+                  )}
+                </div>
+
                 <div className="md:col-span-2">
                   <h4 className="font-semibold text-slate-900">{land.title}</h4>
 
@@ -126,6 +150,7 @@ const FarmerLandsPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Area</p>
+
                   <p className="font-medium text-slate-900">
                     {land.area} {land.areaUnit}
                   </p>
@@ -133,6 +158,7 @@ const FarmerLandsPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Price</p>
+
                   <p className="font-medium text-slate-900">
                     ₹{land.price} / {land.priceUnit?.replaceAll("_", " ")}
                   </p>
@@ -140,6 +166,7 @@ const FarmerLandsPage = () => {
 
                 <div>
                   <p className="text-sm text-slate-500">Status</p>
+
                   <div className="mt-1">
                     <StatusBadge status={land.status} />
                   </div>

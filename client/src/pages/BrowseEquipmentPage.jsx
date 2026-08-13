@@ -120,6 +120,20 @@ const BrowseEquipmentPage = () => {
               key={equipment.id}
               className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
             >
+              <div className="mb-5 h-48 overflow-hidden rounded-xl bg-slate-100">
+                {equipment.imageUrl ? (
+                  <img
+                    src={equipment.imageUrl}
+                    alt={equipment.title}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                    No image available
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900">
