@@ -4,6 +4,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import AddEquipmentForm from "../components/equipment/AddEquipmentForm.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { deleteEquipment, getMyEquipment } from "../api/equipmentApi";
+import EmptyState from "../components/common/EmptyState.jsx";
 
 const FarmerEquipmentPage = () => {
   const [showForm, setShowForm] = useState(false);
@@ -112,8 +113,14 @@ const FarmerEquipmentPage = () => {
             Loading equipment listings...
           </div>
         ) : equipmentList.length === 0 ? (
-          <div className="px-6 py-10 text-center text-slate-500">
-            No equipment listings found.
+          <div className="p-6">
+            <EmptyState
+              icon="🚜"
+              title="No equipment listed yet"
+              description="Upload your first equipment listing with image, rent price, and availability to start receiving rental requests."
+              actionLabel="Add Equipment"
+              onAction={() => setShowForm(true)}
+            />
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
