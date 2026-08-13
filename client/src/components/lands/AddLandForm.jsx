@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createLand } from "../../api/landApi";
+import ImageUploadField from "../common/ImageUploadField.jsx";
 
 const initialFormData = {
   title: "",
@@ -27,6 +28,13 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleImageChange = (imageUrl) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      imageUrl,
     }));
   };
 
@@ -60,6 +68,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Add New Land</h3>
+
           <p className="text-sm text-slate-500">
             Create a land listing for contract farming or rent.
           </p>
@@ -85,6 +94,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Title
           </label>
+
           <input
             type="text"
             name="title"
@@ -100,6 +110,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Description
           </label>
+
           <textarea
             name="description"
             value={formData.description}
@@ -115,6 +126,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Area
           </label>
+
           <input
             type="number"
             name="area"
@@ -130,6 +142,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Area Unit
           </label>
+
           <input
             type="text"
             name="areaUnit"
@@ -144,6 +157,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Price
           </label>
+
           <input
             type="number"
             name="price"
@@ -159,6 +173,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Price Unit
           </label>
+
           <select
             name="priceUnit"
             value={formData.priceUnit}
@@ -174,6 +189,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Listing Type
           </label>
+
           <select
             name="listingType"
             value={formData.listingType}
@@ -185,24 +201,17 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           </select>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700">
-            Image URL
-          </label>
-          <input
-            type="url"
-            name="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            placeholder="https://example.com/farm-land.jpg"
-            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
-          />
-        </div>
+        <ImageUploadField
+          label="Land Image"
+          value={formData.imageUrl}
+          onChange={handleImageChange}
+        />
 
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700">
             Address
           </label>
+
           <input
             type="text"
             name="address"
@@ -218,6 +227,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             District
           </label>
+
           <input
             type="text"
             name="district"
@@ -233,6 +243,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             State
           </label>
+
           <input
             type="text"
             name="state"
@@ -248,6 +259,7 @@ const AddLandForm = ({ onLandCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Pincode
           </label>
+
           <input
             type="text"
             name="pincode"

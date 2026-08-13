@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createEquipment } from "../../api/equipmentApi";
+import ImageUploadField from "../common/ImageUploadField.jsx";
 
 const initialFormData = {
   title: "",
@@ -28,6 +29,13 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
+    }));
+  };
+
+  const handleImageChange = (imageUrl) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      imageUrl,
     }));
   };
 
@@ -62,6 +70,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <h3 className="text-lg font-semibold text-slate-900">
             Add New Equipment
           </h3>
+
           <p className="text-sm text-slate-500">
             Create an equipment listing for rental.
           </p>
@@ -87,6 +96,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Title
           </label>
+
           <input
             type="text"
             name="title"
@@ -102,6 +112,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Equipment Type
           </label>
+
           <input
             type="text"
             name="equipmentType"
@@ -117,6 +128,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Condition
           </label>
+
           <input
             type="text"
             name="condition"
@@ -132,6 +144,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Description
           </label>
+
           <textarea
             name="description"
             value={formData.description}
@@ -147,6 +160,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Brand
           </label>
+
           <input
             type="text"
             name="brand"
@@ -161,6 +175,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Model Name
           </label>
+
           <input
             type="text"
             name="modelName"
@@ -175,6 +190,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Rent Price
           </label>
+
           <input
             type="number"
             name="rentPrice"
@@ -191,6 +207,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Price Unit
           </label>
+
           <select
             name="priceUnit"
             value={formData.priceUnit}
@@ -204,24 +221,17 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           </select>
         </div>
 
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-slate-700">
-            Image URL
-          </label>
-          <input
-            type="url"
-            name="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            placeholder="https://example.com/tractor.jpg"
-            className="mt-2 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
-          />
-        </div>
+        <ImageUploadField
+          label="Equipment Image"
+          value={formData.imageUrl}
+          onChange={handleImageChange}
+        />
 
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700">
             Address
           </label>
+
           <input
             type="text"
             name="address"
@@ -237,6 +247,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             District
           </label>
+
           <input
             type="text"
             name="district"
@@ -252,6 +263,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             State
           </label>
+
           <input
             type="text"
             name="state"
@@ -267,6 +279,7 @@ const AddEquipmentForm = ({ onEquipmentCreated, onCancel }) => {
           <label className="block text-sm font-medium text-slate-700">
             Pincode
           </label>
+
           <input
             type="text"
             name="pincode"
