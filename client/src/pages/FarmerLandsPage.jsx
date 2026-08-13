@@ -4,6 +4,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import AddLandForm from "../components/lands/AddLandForm.jsx";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import { deleteLand, getMyLands } from "../api/landApi";
+import EmptyState from "../components/common/EmptyState.jsx";
 
 const FarmerLandsPage = () => {
   const [showForm, setShowForm] = useState(false);
@@ -112,8 +113,14 @@ const FarmerLandsPage = () => {
             Loading land listings...
           </div>
         ) : lands.length === 0 ? (
-          <div className="px-6 py-10 text-center text-slate-500">
-            No land listings found.
+          <div className="p-6">
+            <EmptyState
+              icon="🌾"
+              title="No land listings yet"
+              description="Add your first land listing to start receiving contract farming or rental opportunities."
+              actionLabel="Add Land"
+              onAction={() => setShowForm(true)}
+            />
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
