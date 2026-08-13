@@ -6,6 +6,7 @@ import {
   cancelContractRequest,
   getSentContractRequests,
 } from "../api/contractApi";
+import EmptyState from "../components/common/EmptyState.jsx";
 
 const BuyerSentContractsPage = () => {
   const [actionError, setActionError] = useState("");
@@ -97,9 +98,13 @@ const BuyerSentContractsPage = () => {
             Loading sent contract requests...
           </div>
         ) : requests.length === 0 ? (
-          <div className="px-6 py-10 text-center text-slate-500">
-            No sent contract requests found.
-          </div>
+          <EmptyState
+            icon="📑"
+            title="No contract requests sent yet"
+            description="Browse available land listings and send your first contract farming proposal to a farmer."
+            actionLabel="Browse Lands"
+            actionTo="/buyer/lands"
+          />
         ) : (
           <div className="divide-y divide-slate-200">
             {requests.map((request) => (
