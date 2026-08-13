@@ -7,6 +7,7 @@ import BuyerDashboard from "./pages/BuyerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsersPage from "./pages/AdminUsersPage.jsx";
 import AdminUploadPdfsPage from "./pages/AdminUploadPdfsPage.jsx";
+import AdminStatsPage from "./pages/AdminStatsPage.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import FarmerLandsPage from "./pages/FarmerLandsPage";
 import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
@@ -17,6 +18,7 @@ import FarmerRentalRequestsPage from "./pages/FarmerRentalRequestsPage.jsx";
 import BrowseEquipmentPage from "./pages/BrowseEquipmentPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
 
 const App = () => {
   return (
@@ -125,6 +127,14 @@ const App = () => {
         }
       />
       <Route
+        path="/admin/stats"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminStatsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/profile"
         element={
           <ProtectedRoute>
@@ -140,6 +150,7 @@ const App = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };
