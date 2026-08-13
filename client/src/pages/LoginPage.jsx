@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const LoginPage = () => {
@@ -63,18 +63,18 @@ const LoginPage = () => {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <section className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-        <h1 className="text-3xl font-bold text-slate-900 text-center">
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
+      <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
+        <h1 className="text-center text-3xl font-bold text-slate-900">
           Digital Krishii
         </h1>
 
-        <p className="text-slate-500 text-center mt-2">
+        <p className="mt-2 text-center text-slate-500">
           Login to continue your farming contract journey
         </p>
 
         {errorMessage && (
-          <div className="mt-6 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {errorMessage}
           </div>
         )}
@@ -120,6 +120,16 @@ const LoginPage = () => {
             {isSubmitting ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Don&apos;t have an account?{" "}
+          <Link
+            to="/register"
+            className="font-semibold text-green-700 hover:underline"
+          >
+            Create account
+          </Link>
+        </p>
       </section>
     </main>
   );
