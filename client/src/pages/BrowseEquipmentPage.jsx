@@ -4,6 +4,7 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import StatusBadge from "../components/common/StatusBadge.jsx";
 import RentalRequestModal from "../components/equipment/RentalRequestModal.jsx";
 import { getEquipment } from "../api/equipmentApi";
+import EmptyState from "../components/common/EmptyState.jsx";
 
 const BrowseEquipmentPage = () => {
   const [page, setPage] = useState(1);
@@ -107,12 +108,23 @@ const BrowseEquipmentPage = () => {
 
       {isLoading ? (
         <div className="rounded-2xl bg-white px-6 py-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200">
-          Loading equipment listings...
+          Loading equipment...
         </div>
       ) : equipmentList.length === 0 ? (
-        <div className="rounded-2xl bg-white px-6 py-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200">
-          No available equipment found.
-        </div>
+        <EmptyState
+          icon="🚜"
+          title="No equipment available"
+          description="Try changing your district filter or check again later when farmers add new equipment listings."
+          actionLabel={district ? "Clear Filter" : undefined}
+          onAction={
+            district
+              ? () => {
+                  setDistrict("");
+                  setPage(1);
+                }
+              : undefined
+          }
+        />
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           {equipmentList.map((equipment) => (
