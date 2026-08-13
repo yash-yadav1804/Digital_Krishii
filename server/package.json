@@ -1,19 +1,32 @@
 {
-  "name": "server",
+  "name": "digital-krishii-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend API for Digital Krishii contract farming platform",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "seed": "prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "contract-farming",
+    "digital-krishii",
+    "express",
+    "prisma",
+    "postgresql"
+  ],
+  "author": "Yash Yadav",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
