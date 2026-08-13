@@ -49,7 +49,7 @@ const RegisterPage = () => {
       lastName: form.get("lastName")?.trim(),
       email: form.get("email")?.trim(),
       password,
-      roles: [form.get("role")],
+      role: form.get("role"),
     };
 
     setErrorMessage("");
