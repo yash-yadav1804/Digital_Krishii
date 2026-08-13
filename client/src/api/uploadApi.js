@@ -1,9 +1,9 @@
 import apiClient from "./apiClient";
 
-export const uploadImage = async (imageFile) => {
+export const uploadImage = async (file) => {
   const formData = new FormData();
 
-  formData.append("image", imageFile);
+  formData.append("image", file);
 
   const response = await apiClient.post("/uploads/image", formData, {
     headers: {
@@ -14,10 +14,10 @@ export const uploadImage = async (imageFile) => {
   return response.data;
 };
 
-export const uploadPdf = async (pdfFile) => {
+export const uploadPdf = async (file) => {
   const formData = new FormData();
 
-  formData.append("pdf", pdfFile);
+  formData.append("pdf", file);
 
   const response = await apiClient.post("/uploads/pdf", formData, {
     headers: {

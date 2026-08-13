@@ -6,6 +6,7 @@ import FarmerDashboard from "./pages/FarmerDashboard";
 import BuyerDashboard from "./pages/BuyerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsersPage from "./pages/AdminUsersPage.jsx";
+import AdminUploadPdfsPage from "./pages/AdminUploadPdfsPage.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import FarmerLandsPage from "./pages/FarmerLandsPage";
 import FarmerEquipmentPage from "./pages/FarmerEquipmentPage";
@@ -112,6 +113,14 @@ const App = () => {
         element={
           <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminUsersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/uploads"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminUploadPdfsPage />
           </ProtectedRoute>
         }
       />
